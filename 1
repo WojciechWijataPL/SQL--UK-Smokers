@@ -1,0 +1,114 @@
+SELECT gender, age, marital_status, highest_qualification, nationality, ethnicity, gross_income, region, smoke, `type`
+FROM uk_smoking.smoking
+limit 5;
+
+
+-- i decided to delate useful column
+Alter table smoking 
+drop column amt_weekdays;
+
+-- look at female and male
+
+SELECT 
+    gender,
+    COUNT(gender) AS gender_count,
+    (COUNT(gender) * 100.0) / (SELECT COUNT(*) FROM smoking) AS percentage
+FROM 
+    smoking s
+GROUP BY 
+    gender;
+   
+   -- lets see how many smokers we have
+   
+   SELECT smoke, count(smoke)
+   from smoking s
+   group by 1
+   
+   
+   -- now we know how many smoker we have - 421
+   
+   -- lets see numbers relationship smokers to earnings
+
+   SELECT 
+    gross_income,
+    SUM(CASE WHEN smoke = 'Yes' THEN 1 ELSE 0 END) AS smoke_count,
+    COUNT(*) AS total_count,
+    (SUM(CASE WHEN smoke = 'Yes' THEN 1 ELSE 0 END) * 100.0) / COUNT(*) AS smoke_percentage
+FROM 
+    smoking
+GROUP BY 
+    gross_income
+ORDER BY 
+    4 desc;
+   
+   -- now we know that in our dataset it is not collration between income and smokers in that group
+   
+   
+   -- so maybe it depends on qualification or martial status, lets see
+   
+   
+    SELECT 
+    marital_status ,
+    SUM(CASE WHEN smoke = 'Yes' THEN 1 ELSE 0 END) AS smoke_count,
+    COUNT(*) AS total_count,
+    (SUM(CASE WHEN smoke = 'Yes' THEN 1 ELSE 0 END) * 100.0) / COUNT(*) AS smoke_percentage
+FROM 
+    smoking
+GROUP BY 
+   marital_status 
+ORDER BY 
+    4 desc;
+
+   -- most singe decide to smoke, maybe it is conected with loneliness? divorced and separated have also higer ratio
+   
+   SELECT 
+    highest_qualification  ,
+    SUM(CASE WHEN smoke = 'Yes' THEN 1 ELSE 0 END) AS smoke_count,
+    COUNT(*) AS total_count,
+    (SUM(CASE WHEN smoke = 'Yes' THEN 1 ELSE 0 END) * 100.0) / COUNT(*) AS smoke_percentage
+FROM 
+    smoking
+GROUP BY 
+   highest_qualification  
+ORDER BY 
+    4 desc;
+   
+   -- ths case is interesting for me because i tought that no qualification people smoke the most
+   
+   
+   -- now we devided people to age groups and see next relations
+   -- first i will see ages in our dataset
+   
+   select DISTINCT age
+   from smoking s
+   order by 1 desc;
+
+ 
+ SELECT   COUNT(*) AS group_count,
+    CASE
+        WHEN age < 30 THEN 'young'
+        WHEN age >= 30 AND age < 60 THEN 'middle age'
+        WHEN age >= 60 THEN 'old'
+    END AS 'groups'
+FROM 
+    smoking
+    where smoke = 'Yes'
+GROUP BY 
+    CASE
+        WHEN age < 30 THEN 'young'
+        WHEN age >= 30 AND age < 60 THEN 'middle age'
+        WHEN age >= 60 THEN 'old'
+    END;
+   
+   
+   -- now we know that biggest group of smokers are middle age
+   
+   -- what the most popular type of smoke in uk?
+SELECT 
+    type,
+    COUNT(*) AS type_count
+FROM smoking s
+WHERE type IS NOT null
+GROUP BY type;
+
+-- ok so packet are such more popular than hand rolled
